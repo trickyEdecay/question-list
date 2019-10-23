@@ -25,6 +25,8 @@
 <script>
 import axios from "axios";
 import api from "@/api";
+import responseHandler from '@/utils/responseHandler';
+
 export default {
     name: "Register",
     components: {},
@@ -76,13 +78,12 @@ export default {
                     nickName: this.nickName,
                 })
                 .then(response => {
-                    if (response.data.code === "0000") {
-                        this.$message({
-                            message:'注册成功',
-                            duration:1000    
-                        });
-                        this.$router.push({ name: "Login" });
-                    }
+                    if(!responseHandler.handle(response.data,this)){return;}
+                    this.$message({
+                        message:'注册成功',
+                        duration:1000    
+                    });
+                    this.$router.push({ name: "Login" });
                 });
         }
     }

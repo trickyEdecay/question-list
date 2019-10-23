@@ -20,6 +20,8 @@
 <script>
 import axios from "axios";
 import api from "@/api";
+import responseHandler from '@/utils/responseHandler';
+
 export default {
     name: "Login",
     components: {},
@@ -55,9 +57,8 @@ export default {
                     password: this.password
                 })
                 .then(response => {
-                    if (response.data.code === "0000") {
-                        this.$router.push({ name: "Home" });
-                    }
+                    if(!responseHandler.handle(response.data,this)){return;}
+                    this.$router.push({ name: "Home" });
                 });
         }
     }

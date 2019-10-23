@@ -45,6 +45,7 @@
 <script>
 import axios from "axios";
 import api from "@/api";
+import responseHandler from '@/utils/responseHandler';
 export default {
     name: "Home",
     data() {
@@ -84,9 +85,8 @@ export default {
             axios
                 .get("/api" + api.getNickName)
                 .then(response => {
-                    if (response.data.code === "0000") {
-                        this.nickName = response.data.data
-                    }
+                    if(!responseHandler.handle(response.data,this)){return;}
+                    this.nickName = response.data.data;
                 });
         },
         getQuestionList(page=1){
@@ -97,19 +97,16 @@ export default {
                     }
                 })
                 .then(response => {
-                    if (response.data.code === "0000") {
-                        this.questionList = response.data.data.questions;
-                        this.pageCount = response.data.data.pageCount;
-                    }
+                    if(!responseHandler.handle(response.data,this)){return;}
+                    this.questionList = response.data.data.questions;
+                    this.pageCount = response.data.data.pageCount;
                 });
         },
         logout(){
             axios
                 .post("/api" + api.logout)
                 .then(response => {
-                    if (response.data.code === "0000") {
-                        this.$router.push({ name: "Login" });
-                    }
+                    this.$router.push({ name: "Login" });
                 });
         },
         createQuestion(){
@@ -126,9 +123,9 @@ export default {
                      isAnonymous:this.isAnonymous
                 })
                 .then(response => {
-                    if (response.data.code === "0000") {
-                        
-                    }
+                    if(!responseHandler.handle(response.data,this)){return;}
+                    this.myQuestion = "";
+                    this.getQuestionList();
                 });
         },
         handleProfileOperation(command){
