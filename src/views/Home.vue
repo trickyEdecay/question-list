@@ -1,68 +1,145 @@
 <template>
     <div class="home">
+        <!-- 导航栏 -->
         <nav>
             <h1>问题列表</h1>
-            <el-dropdown>
+            <el-dropdown @command="handleProfileOperation">
                 <span class="el-dropdown-link">
                     {{nickName}}
                     <i class="el-icon-arrow-down el-icon--right"></i>
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item>注销</el-dropdown-item>
+                    <el-dropdown-item command="logout">注销</el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
         </nav>
+        <!-- 导航栏 [完]-->
+
+        <!-- 页面主要内容 -->
         <main>
             <div style="margin-top: 15px;">
                 <el-input placeholder="请输入你要提问的内容" v-model="myQuestion">
-                    <el-button slot="append">提问</el-button>
+                    <el-button slot="append" @click="createQuestion">提问</el-button>
                 </el-input>
             </div>
             <div class="submit-question-options">
-                <el-checkbox v-model="checked">匿名提问</el-checkbox>
+                <el-checkbox v-model="isAnonymous">匿名提问</el-checkbox>
             </div>
             <h1>问题列表</h1>
             <div class="question-item" v-for="questionItem of questionList" :key="questionItem.id">
-                <p class="content">{{questionItem.content}}</p>
-                <p class="time">{{questionItem.time}} by {{questionItem.nickName}}</p>
+                <p class="content">{{questionItem.question}}</p>
+                <p class="time">{{questionItem.time}} by {{questionItem.userName}}</p>
             </div>
+            <el-pagination
+                background
+                layout="prev, pager, next"
+                @current-change="getQuestionList"
+                :page-count="pageCount">
+            </el-pagination>
         </main>
+        <!-- 页面主要内容 [完] -->
+
     </div>
 </template>
 
 <script>
 import axios from "axios";
+import api from "@/api";
 export default {
     name: "Home",
     data() {
         return {
             nickName: "赖志楚",
             myQuestion:"",
+            isAnonymous:false,
+            pageCount:1,
             questionList: [
-                {
-                    id: 12,
-                    content: "asdkjasldajslkas",
-                    time: "2019-08-02 20:47:53",
-                    nickName: "赖志楚"
-                },
-                {
-                    id: 13,
-                    content: "asdkjasldajslkas",
-                    time: "2019-08-02 20:47:53",
-                    nickName: "赖志楚"
-                },
-                {
-                    id: 14,
-                    content: "asdkjasldajslkas",
-                    time: "2019-08-02 20:47:53",
-                    nickName: "赖志楚"
-                }
+                // {
+                //     id: 12,
+                //     question: "asdkjasldajslkas",
+                //     time: "2019-08-02 20:47:53",
+                //     userName: "赖志楚"
+                // },
+                // {
+                //     id: 13,
+                //     question: "asdkjasldajslkas",
+                //     time: "2019-08-02 20:47:53",
+                //     userName: "赖志楚"
+                // },
+                // {
+                //     id: 14,
+                //     question: "asdkjasldajslkas",
+                //     time: "2019-08-02 20:47:53",
+                //     userName: "赖志楚"
+                // }
             ]
         };
     },
     created() {
+        this.getNickName();
+        this.getQuestionList();
     },
     methods: {
+        getNickName(){
+            axios
+                .get("/api" + api.getNickName)
+                .then(response => {
+                    if (response.data.code === "0000") {
+                        this.nickName = response.data.data
+                    }
+                });
+        },
+        getQuestionList(page=1){
+            axios
+                .get("/api" + api.getQuestionList,{
+                    params:{
+                        page
+                    }
+                })
+                .then(response => {
+                    if (response.data.code === "0000") {
+                        this.questionList = response.data.data.questions;
+                        this.pageCount = response.data.data.pageCount;
+                    }
+                });
+        },
+        logout(){
+            axios
+                .post("/api" + api.logout)
+                .then(response => {
+                    if (response.data.code === "0000") {
+                        this.$router.push({ name: "Login" });
+                    }
+                });
+        },
+        createQuestion(){
+            if(this.myQuestion.trim()===""){
+                this.$message.error({
+                    message:'你需要填入你想要提问的内容！',
+                    duration:1000    
+                });
+                return;
+            }
+            axios
+                .post("/api" + api.createQuestion,{
+                     question:this.myQuestion,
+                     isAnonymous:this.isAnonymous
+                })
+                .then(response => {
+                    if (response.data.code === "0000") {
+                        
+                    }
+                });
+        },
+        handleProfileOperation(command){
+            switch (command) {
+                case "logout":
+                    this.logout();
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 };
 </script>
